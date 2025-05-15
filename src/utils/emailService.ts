@@ -2,10 +2,12 @@ import emailjs from 'emailjs-com';
 import { UserData, Answer } from '../types';
 import { getMaturityLevel, getQuestionFeedback, getNormalizedScore } from './scoring';
 import { questions } from '../data/questions';
+import { google } from 'googleapis';
 
-const SERVICE_ID = 'service_your_service_id'; // Replace with your EmailJS service ID
-const TEMPLATE_ID = 'template_your_template_id'; // Replace with your EmailJS template ID
-const USER_ID = 'user_your_user_id'; // Replace with your EmailJS user ID
+const SERVICE_ID = import.meta.env.VITE_EMAILJS_SERVICE_ID;
+const TEMPLATE_ID = import.meta.env.VITE_EMAILJS_TEMPLATE_ID;
+const USER_ID = import.meta.env.VITE_EMAILJS_USER_ID;
+const SHEET_ID = import.meta.env.VITE_GOOGLE_SHEET_ID;
 
 interface ReportData {
   userData: UserData;
@@ -52,9 +54,7 @@ export const sendReportEmail = async (reportData: ReportData): Promise<boolean> 
     };
     
     await emailjs.send(SERVICE_ID, TEMPLATE_ID, templateParams, USER_ID);
-    
-    // In a real application, you would also save the data to a database here
-    saveReportToDatabase(reportData);
+    await saveToGoogleSheets(reportData);
     
     return true;
   } catch (error) {
@@ -63,29 +63,43 @@ export const sendReportEmail = async (reportData: ReportData): Promise<boolean> 
   }
 };
 
-// Mock function to demonstrate database storage
-// In a real application, this would connect to a database
-const saveReportToDatabase = (reportData: ReportData) => {
-  console.log('Saving report to database:', reportData);
-  // Implement actual database storage here
-  
-  // Example: If using Supabase or Firebase, you might do something like:
-  // supabase
-  //   .from('brand_assessments')
-  //   .insert([
-  //     {
-  //       user_id: uuid(),
-  //       user_name: reportData.userData.fullName,
-  //       email: reportData.userData.email,
-  //       company_name: reportData.userData.companyName,
-  //       position: reportData.userData.position,
-  //       industry: reportData.userData.industry,
-  //       company_size: reportData.userData.companySize,
-  //       location: reportData.userData.location,
-  //       score: reportData.score,
-  //       maturity_level: reportData.maturityLevel,
-  //       answers: JSON.stringify(answers),
-  //       created_at: new Date()
-  //     }
-  //   ])
+const saveToGoogleSheets = async (reportData: ReportData) => {
+  try {
+    const auth = new google.auth.GoogleAuth({
+      credentials: JSON.parse(import.meta.env.VITE_GOOGLE_CREDENTIALS),
+      scopes: ['https://www.googleapis.com/auth/spreadsheets'],
+    });
+
+    const sheets = google.sheets({ version: 'v4', auth });
+    
+    const values = [
+      [
+        new Date().toISOString(),
+        reportData.userData.fullName,
+        reportData.userData.email,
+        reportData.userData.companyName,
+        reportData.userData.position,
+        reportData.userData.industry,
+        reportData.userData.companySize,
+        reportData.userData.location,
+        reportData.score,
+        reportData.maturityLevel,
+        reportData.feedbackByQuestion.map(fb => `${fb.dimension}: ${fb.feedback}`).join('\n')
+      ]
+    ];
+
+    await sheets.spreadsheets.values.append({
+      spreadsheetId: SHEET_ID,
+      range: 'Respostas!A:K',
+      valueInputOption: 'RAW',
+      requestBody: {
+        values,
+      },
+    });
+
+    return true;
+  } catch (error) {
+    console.error('Error saving to Google Sheets:', error);
+    return false;
+  }
 };

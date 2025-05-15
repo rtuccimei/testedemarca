@@ -11,12 +11,12 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
         <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between">
           <div className="flex items-center space-x-2">
             <img 
-              src="https://raw.githubusercontent.com/stackblitz/stackblitz-images/master/tuccimei-branding.png" 
+              src="https://raw.githubusercontent.com/stackblitz/stackblitz-images/master/tuccimei-branding.png"
               alt="Tuccimei Branding" 
               className="h-8"
             />
-            <span className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-indigo-600 to-blue-500">
-              Tuccimei Branding
+            <span className="text-2xl font-bold text-[#2B3990]">
+              Branding
             </span>
           </div>
           <div>
@@ -34,11 +34,11 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
           <div className="flex flex-col md:flex-row justify-between items-center">
             <div className="flex items-center space-x-2">
               <img 
-                src="https://raw.githubusercontent.com/stackblitz/stackblitz-images/master/tuccimei-branding.png" 
+                src="https://raw.githubusercontent.com/stackblitz/stackblitz-images/master/tuccimei-branding.png"
                 alt="Tuccimei Branding" 
                 className="h-6"
               />
-              <span className="font-semibold text-gray-700">Tuccimei Branding</span>
+              <span className="font-semibold text-[#2B3990]">Branding</span>
             </div>
             <div className="text-sm text-gray-500">
               © {new Date().getFullYear()} Tuccimei Branding. Todos os direitos reservados.
